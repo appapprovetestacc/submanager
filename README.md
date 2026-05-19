@@ -1,5 +1,7 @@
 # SubManager
 
+> iterate-chat smoke test, 2026-05-20
+
 Shopify App scaffolded by [AppApprove](https://appapprove.com). Built on
 Remix + Cloudflare Workers.
 

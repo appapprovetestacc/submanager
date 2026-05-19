@@ -8,9 +8,9 @@ import config from "../../appapprove.config";
 // what the bundler expects (it can't follow dynamic imports built from
 // runtime config).
 const HANDLERS: Record<string, () => Promise<{ default: CronHandler }>> = {
-  // Example — uncomment after adding the schedule to wrangler.toml [triggers]:
-  // "0 * * * *": () => import("../crons/example-cleanup"),
   "0 8 * * *": () => import("../crons/gdpr-deadline-check"),
+  "0 2 * * *": () => import("../crons/dunning-retry"),
+  "0 9 * * *": () => import("../crons/renewal-reminders"),
 };
 
 // CF Workers `scheduled` event entry point. Wire this from your Worker's

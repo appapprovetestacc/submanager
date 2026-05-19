@@ -45,7 +45,11 @@ export interface Env {
   // falls back to the AppApprove default sender via /api/mail/send
   // proxy (forced from = noreply-{slug}@apps.appapprove.com).
   RESEND_API_KEY?: string;
+  RESEND_FROM?: string;
   MAIL_SENDER_FROM?: string;
+  // SubManager-specific env vars
+  SUBSCRIPTIONS_PORTAL_HMAC_SECRET?: string;
+  DRY_RUN_EMAILS?: "0" | "1";
   // Optional Cloudflare bindings — declared here so AI-generated routes
   // that reference env.D1 / env.R2 / env.QUEUE / env.MY_DO compile cleanly
   // even when the user hasn't yet bound them in wrangler.toml. Bindings

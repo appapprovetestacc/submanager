@@ -11,12 +11,21 @@ embedded = true
 [access_scopes]
 # Comma-separated list of API scopes. Match these to what your code actually
 # uses — the AppApprove pre-submission checker flags scope drift.
-scopes = "read_products,write_products,read_orders,write_customers,write_draft_orders,read_purchase_options,write_purchase_options"
+scopes = "read_products,write_products,read_orders,write_customers,write_draft_orders,read_purchase_options,write_purchase_options,read_own_subscription_contracts,write_own_subscription_contracts,read_customers"
 
 [auth]
 redirect_urls = [
   "https://submanager.appapprove.app/auth/callback"
 ]
+
+[app_proxy]
+# Customer-facing subscription portal lives at
+# https://<shop>/apps/subscriptions/* — Shopify proxies the request to
+# `url` with `signature` + `shop` query params we verify. AppApprove
+# deploy overwrites url with the live Worker URL.
+url = "https://submanager.appapprove.app/apps/subscriptions"
+subpath = "subscriptions"
+prefix = "apps"
 
 [webhooks]
 # F-NEW-M — keep current. shopify-check blocks pre-2024-07 versions
@@ -38,6 +47,18 @@ api_version = "2026-01"
   [[webhooks.subscriptions]]
   topics = [ "app_subscriptions/update" ]
   uri = "/webhooks/app_subscriptions/update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "subscription_billing_attempts/success" ]
+  uri = "/webhooks/subscription_billing_attempts/success"
+
+  [[webhooks.subscriptions]]
+  topics = [ "subscription_billing_attempts/failure" ]
+  uri = "/webhooks/subscription_billing_attempts/failure"
+
+  [[webhooks.subscriptions]]
+  topics = [ "subscription_contracts/update" ]
+  uri = "/webhooks/subscription_contracts/update"
 
 [pos]
 embedded = false

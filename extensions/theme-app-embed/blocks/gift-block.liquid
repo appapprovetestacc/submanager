@@ -1,0 +1,118 @@
+{% comment %}
+  SubManager gift-subscription block.
+
+  Customer-facing block rendered on subscription product pages. The
+  shopper picks how many cycles to prepay, who the recipient is, and
+  optionally adds a message. On submit the form POSTs to the
+  app-proxy at /apps/subscriptions/gift/new which:
+    1. Records the gift_subscription row (status=pending_setup)
+    2. Returns a draft-order checkout URL so Shopify Payments handles
+       the prepayment.
+
+  Uninstall-safe rules — keep these when editing:
+    * Render only inside the {% if block.settings.enabled %} guard.
+    * No localStorage / sessionStorage writes — values live in form
+      state only (block.settings.enabled = false → DOM removed, no
+      cleanup needed).
+    * No third-party hosts — form submits to the same shop's app proxy.
+{% endcomment %}
+
+{%- if block.settings.enabled -%}
+  <section
+    class="sm-gift"
+    data-block-id="{{ block.id }}"
+    role="region"
+    aria-label="{{ block.settings.heading | escape }}"
+  >
+    <h3 class="sm-gift__heading">{{ block.settings.heading | escape }}</h3>
+    {%- if block.settings.body != blank -%}
+      <p class="sm-gift__body">{{ block.settings.body | escape }}</p>
+    {%- endif -%}
+    <form
+      class="sm-gift__form"
+      action="/apps/subscriptions/gift/new"
+      method="POST"
+      novalidate
+    >
+      <input type="hidden" name="product_id" value="{{ product.id }}" />
+      <input type="hidden" name="variant_id" value="{{ product.selected_or_first_available_variant.id }}" />
+      <input type="hidden" name="shop" value="{{ shop.permanent_domain }}" />
+
+      <fieldset class="sm-gift__cycles">
+        <legend>Number of deliveries</legend>
+        <label>
+          <input type="radio" name="cycles" value="3" required>
+          <span>3 deliveries</span>
+        </label>
+        <label>
+          <input type="radio" name="cycles" value="6" checked>
+          <span>6 deliveries</span>
+        </label>
+        <label>
+          <input type="radio" name="cycles" value="12">
+          <span>12 deliveries</span>
+        </label>
+      </fieldset>
+
+      <label class="sm-gift__field">
+        <span>Recipient name</span>
+        <input type="text" name="recipient_name" required autocomplete="off">
+      </label>
+      <label class="sm-gift__field">
+        <span>Recipient email</span>
+        <input type="email" name="recipient_email" required autocomplete="off">
+      </label>
+      <label class="sm-gift__field">
+        <span>Recipient address</span>
+        <textarea name="recipient_address" rows="3" required></textarea>
+      </label>
+      <label class="sm-gift__field">
+        <span>Gift message (optional)</span>
+        <textarea name="message" rows="2" maxlength="500"></textarea>
+      </label>
+      <label class="sm-gift__field">
+        <span>Your name</span>
+        <input type="text" name="buyer_name" required autocomplete="name">
+      </label>
+      <label class="sm-gift__field">
+        <span>Your email</span>
+        <input type="email" name="buyer_email" required autocomplete="email">
+      </label>
+
+      <button type="submit" class="sm-gift__submit">
+        Send as a gift
+      </button>
+      <p class="sm-gift__hint" role="status" aria-live="polite">
+        The recipient receives delivery updates only — no payment portal.
+      </p>
+    </form>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "SubManager gift subscription",
+  "target": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Show gift-subscription block",
+      "default": false,
+      "info": "Renders on product pages where this block is added."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Send as a gift"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body copy",
+      "default": "Prepay for 3, 6, or 12 deliveries. The recipient gets the schedule — no payment portal needed."
+    }
+  ]
+}
+{% endschema %}

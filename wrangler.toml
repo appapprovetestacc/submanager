@@ -41,16 +41,27 @@ directory = "./build/client"
 # time. Don't edit the [vars] section by hand — use the AppApprove dashboard.
 [vars]
 APPAPPROVE_PROJECT_SLUG = "submanager"
-SCOPES = "read_products,write_products,read_orders,write_customers,write_draft_orders,read_purchase_options,write_purchase_options"
+SCOPES = "read_products,write_products,read_orders,write_customers,write_draft_orders,read_purchase_options,write_purchase_options,read_own_subscription_contracts,write_own_subscription_contracts,read_customers"
 
 # CF Cron Triggers — uncomment + add schedules here, then mirror them in
 # appapprove.config.ts `crons` so the dispatcher knows which handler to
 # call. AppApprove's deploy pipeline diffs the two and warns on drift.
-# [triggers]
-# crons = [
-#   "0 * * * *",        # hourly
-#   "0 0 * * *",        # daily at 00:00 UTC
-# ]
+[triggers]
+crons = [
+  "0 2 * * *",   # 02:00 UTC — dunning-retry sweep
+  "0 9 * * *",   # 09:00 UTC — renewal reminder + gift cycle reminder enqueue
+  "0 8 * * *",   # 08:00 UTC — GDPR deadline scan (existing)
+]
+
+# D1 binding — subscription contracts, dunning, magic-link tokens,
+# renewal reminders, gift subscriptions. AppApprove's deploy pipeline
+# auto-creates the database on first deploy (placeholder UUID below is
+# replaced post-deploy with the real one).
+[[d1_databases]]
+binding = "D1"
+database_name = "submanager"
+database_id = "pending"
+migrations_dir = "drizzle"
 
 # CF Queues — define a producer + consumer for each queue you use. The
 # AppApprove deploy pipeline auto-provisions the queue on first deploy.
@@ -89,7 +100,7 @@ workers_dev = true
 
 [env.preview.vars]
 APPAPPROVE_PROJECT_SLUG = "submanager"
-SCOPES = "read_products,write_products,read_orders,write_customers,write_draft_orders,read_purchase_options,write_purchase_options"
+SCOPES = "read_products,write_products,read_orders,write_customers,write_draft_orders,read_purchase_options,write_purchase_options,read_own_subscription_contracts,write_own_subscription_contracts,read_customers"
 PREVIEW_MODE = "1"
 
 [env.preview.assets]
